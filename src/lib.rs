@@ -1,32 +1,40 @@
-use std::any::Any;
+pub mod wgtr{
+    use std::{any::{Any, TypeId}, collections::HashMap};
 
-use resource::Resource;
-
-mod resource;
-
-#[derive(Default)]
-pub struct World{
-    resources: Resource,
-}
-
-impl World{
-    pub fn new() -> Self{
-        Self::default()
+    #[derive(Default)]
+    pub struct World{
+        resources: HashMap<TypeId, Box<dyn Any>>,
     }
 
-    pub fn add_resource(&mut self, resource_data: impl Any){
-        self.resources.add(resource_data);
-    }
 
-    pub fn get_resource<T: Any>(&self) -> Option<&T>{
-        self.resources.get_ref::<T>()
-    }
+    impl World{
+        pub fn new() -> Self{
+            Self::default()
+        }
+        pub fn add_resource(&mut self, resource_data: impl Any){
+            let type_id = resource_data.type_id();
+            self.resources.insert(type_id, Box::new(resource_data));
+        }
 
-    pub fn get_resource_mut<T: Any>(&mut self) -> Option<&mut T>{
-        self.resources.get_mut::<T>()
-    }  
+        pub fn get_resource<T: Any>(&self) -> Option<&T>{
+            let type_id = TypeId::of::<T>();
+            if let Some(data) = self.resources.get(&type_id){
+                return data.downcast_ref();
+            }
+            None
+        }
 
-    pub fn remove_resource<T: Any>(&mut self){
-        self.resources.remove::<T>();
+        pub fn get_resource_mut<T: Any>(&mut self) -> Option<&mut T>{
+            let type_id = TypeId::of::<T>();
+            if let Some(data) = self.resources.get_mut(&type_id){
+                return data.downcast_mut();
+            }
+            None
+        }  
+
+        pub fn remove_resource<T: Any>(&mut self){
+            let type_id = TypeId::of::<T>();
+            self.resources.remove(&type_id);
+        }
     }
 }

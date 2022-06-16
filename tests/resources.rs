@@ -1,4 +1,4 @@
-use wgtr_ecs::*;
+use wgtr_ecs::wgtr::*;
 
 #[test]
 fn create_and_get_resource_immutably(){
