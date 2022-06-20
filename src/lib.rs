@@ -56,6 +56,20 @@ pub mod wgtr {
             Ok(self)
         }
 
+        pub fn remove_component<T: Any>(&mut self, index: usize) -> Result<(), &'static str> {
+            let type_id = TypeId::of::<T>();
+            let mask = self
+                .bit_masks
+                .get(&type_id)
+                .ok_or_else(|| "Tried to remove component from entity that does not have one!")?;
+
+            if self.has_component(index, *mask) {
+                self.bit_maps[index] ^= *mask;
+            }
+
+            Ok(())
+        }
+
         pub fn query(&self) -> Query {
             Query::new(&self.bit_masks, &self.bit_maps, &self.components)
         }
@@ -84,6 +98,10 @@ pub mod wgtr {
         pub fn remove_resource<T: Any>(&mut self) {
             let type_id = TypeId::of::<T>();
             self.resources.remove(&type_id);
+        }
+
+        fn has_component(&self, index: usize, mask: u128) -> bool {
+            self.bit_maps[index] & mask == mask
         }
     }
 

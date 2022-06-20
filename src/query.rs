@@ -40,7 +40,7 @@ impl<'a> Query<'a> {
         Ok(self)
     }
 
-    pub fn run(&self) -> Vec<Vec<Rc<RefCell<dyn Any>>>> {
+    pub fn run(&self) -> (Vec<usize>, Vec<Vec<Rc<RefCell<dyn Any>>>>) {
         let indexes: Vec<usize> = self
             .entities_bit_maps
             .iter()
@@ -63,7 +63,7 @@ impl<'a> Query<'a> {
             result.push(components_to_keep);
         }
 
-        result
+        (indexes, result)
     }
 }
 
@@ -104,10 +104,13 @@ mod test {
         query.with_component::<u32>()?.with_component::<f32>()?;
         let query_result = query.run();
 
-        let u32s = &query_result[0];
-        let f32s = &query_result[1];
+        let u32s = &query_result.1[0];
+        let f32s = &query_result.1[1];
+        let indexes = &query_result.0;
         assert_eq!(u32s.len(), 1);
         assert_eq!(f32s.len(), 1);
+        assert_eq!(u32s.len(), indexes.len());
+        assert_eq!(indexes[0], 1);
 
         let first_u32 = u32s[0].borrow();
         let extracted_u32 = first_u32.downcast_ref::<u32>().unwrap();

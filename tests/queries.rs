@@ -27,8 +27,8 @@ fn create_query() -> Result<(), &'static str> {
         .with_component::<Health>()?
         .with_component::<Speed>()?
         .run();
-    let healths: &Vec<Rc<RefCell<dyn Any>>> = &query[0];
-    let speeds: &Vec<Rc<RefCell<dyn Any>>> = &query[1];
+    let healths: &Vec<Rc<RefCell<dyn Any>>> = &query.1[0];
+    let speeds: &Vec<Rc<RefCell<dyn Any>>> = &query.1[1];
 
     assert_eq!(healths.len(), speeds.len());
     assert_eq!(healths.len(), 2);
