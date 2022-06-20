@@ -2,6 +2,7 @@ mod query;
 
 pub mod wgtr {
     pub use crate::query::*;
+
     use std::{
         any::{Any, TypeId},
         cell::RefCell,
@@ -9,12 +10,17 @@ pub mod wgtr {
         rc::Rc,
     };
 
+    pub type Component = Rc<RefCell<dyn Any + 'static>>;
+
     #[derive(Default)]
     pub struct World {
         resources: HashMap<TypeId, Box<dyn Any>>,
-        components: HashMap<TypeId, Vec<Option<Rc<RefCell<dyn Any + 'static>>>>>,
+        components: HashMap<TypeId, Vec<Option<Component>>>,
         bit_masks: HashMap<TypeId, u128>, // every component has its own mask
         bit_maps: Vec<u128>, // every entity has its map which shows which components does it has
+
+        creature_id: usize,     // id of entity that is being now created
+        free_spots: Vec<usize>, // free spots to create entity after removing one
     }
 
     impl World {
@@ -29,6 +35,14 @@ pub mod wgtr {
         }
 
         pub fn create_entity(&mut self) -> &mut Self {
+            if self.free_spots.len() > 0 && self.free_spots[0] != 0 {
+                // if there are free spots
+                let free_index = self.free_spots.last().unwrap();
+                self.creature_id = *free_index;
+                self.free_spots.pop();
+                return self;
+            }
+            self.creature_id = 0;
             self.components
                 .iter_mut()
                 .for_each(|(_key, components)| components.push(None));
@@ -36,8 +50,32 @@ pub mod wgtr {
             self
         }
 
+        pub fn remove_entity(&mut self, index: usize) -> Result<(), &'static str> {
+            let map = self
+                .bit_maps
+                .get_mut(index)
+                .ok_or_else(|| "Tried to remove entity that does not exist")?;
+            *map = 0;
+            if index != 0 {
+                self.free_spots.push(index);
+            }
+            Ok(())
+        }
+
         pub fn with_component(&mut self, data: impl Any) -> Result<&mut Self, &'static str> {
             let type_id = data.type_id();
+
+            if self.creature_id != 0 {
+                // if there are free spots
+                let components = self.components.get_mut(&type_id).unwrap();
+                let indexed_component = components.get_mut(self.creature_id).unwrap();
+                *indexed_component = Some(Rc::new(RefCell::new(data)));
+                let bitmask = self.bit_masks.get(&type_id).unwrap();
+                self.bit_maps[self.creature_id] |= *bitmask;
+
+                return Ok(self);
+            }
+
             let map_index = self.bit_maps.len() - 1;
 
             if let Some(components) = self.components.get_mut(&type_id) {
@@ -54,6 +92,19 @@ pub mod wgtr {
                 );
             }
             Ok(self)
+        }
+
+        pub fn add_component(&mut self, data: impl Any, index: usize) -> Result<(), &'static str> {
+            let type_id = data.type_id();
+            let mask = self
+                .bit_masks
+                .get(&type_id)
+                .ok_or_else(|| "Trying to add not registered component")?;
+
+            self.bit_maps[index] |= mask;
+            self.components.get_mut(&type_id).unwrap()[index] = Some(Rc::new(RefCell::new(data)));
+
+            Ok(())
         }
 
         pub fn remove_component<T: Any>(&mut self, index: usize) -> Result<(), &'static str> {
@@ -107,7 +158,7 @@ pub mod wgtr {
 
     #[cfg(test)]
     mod test {
-        use std::any::TypeId;
+        use std::{any::TypeId, cell::Ref};
 
         use crate::wgtr::*;
 
@@ -156,6 +207,69 @@ pub mod wgtr {
 
             Ok(())
         }
+
+        #[test]
+        fn create_entity_in_free_spot() -> Result<(), &'static str> {
+            let mut world = World::new();
+            world.register_component::<Health>();
+            world.register_component::<Speed>();
+
+            world
+                .create_entity()
+                .with_component(Health(100))?
+                .with_component(Speed(10))?;
+            world
+                .create_entity()
+                .with_component(Health(100))?
+                .with_component(Speed(10))?;
+            world
+                .create_entity()
+                .with_component(Health(100))?
+                .with_component(Speed(10))?;
+            world
+                .create_entity()
+                .with_component(Health(100))?
+                .with_component(Speed(10))?;
+            world
+                .create_entity()
+                .with_component(Health(100))?
+                .with_component(Speed(10))?;
+
+            world.remove_entity(1)?;
+            world.remove_entity(3)?;
+
+            let query = world
+                .query()
+                .with_component::<Health>()?
+                .with_component::<Speed>()?
+                .run();
+            assert_eq!(query.0.len(), 3);
+            world.create_entity().with_component(Health(300))?;
+            world
+                .create_entity()
+                .with_component(Health(400))?
+                .with_component(Speed(10))?;
+            world
+                .create_entity()
+                .with_component(Health(500))?
+                .with_component(Speed(10))?;
+            let query = world.query().with_component::<Health>()?.run();
+            assert_eq!(query.0.len(), 6);
+            assert_eq!(query.0[1], 1);
+            let undone_healths = &query.1[0];
+            let healths: Vec<Ref<dyn Any>> = undone_healths.iter().map(|e| e.borrow()).collect();
+            let deref_healths: Vec<&Health> = healths
+                .iter()
+                .map(|e| e.downcast_ref::<Health>().unwrap())
+                .collect();
+            assert_eq!(deref_healths[3].0, 300); // first free slot
+            assert_eq!(deref_healths[1].0, 400); // second free slot
+            assert_eq!(deref_healths[5].0, 500); // no free slots
+            assert_eq!(deref_healths[2].0, 100); // untouched
+                                                 //assert_eq!(health.0, 300);
+            Ok(())
+        }
+        #[derive(Debug)]
         struct Health(pub u32);
         struct Speed(pub u32);
     }

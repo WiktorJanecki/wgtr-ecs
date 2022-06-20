@@ -1,9 +1,9 @@
 use std::{
     any::{Any, TypeId},
-    cell::RefCell,
     collections::HashMap,
-    rc::Rc,
 };
+
+use crate::wgtr::Component;
 
 pub struct Query<'a> {
     map: u128,
@@ -11,14 +11,14 @@ pub struct Query<'a> {
     components_bit_masks: &'a HashMap<TypeId, u128>,
     type_ids: Vec<TypeId>,
     entities_bit_maps: &'a Vec<u128>,
-    components: &'a HashMap<TypeId, Vec<Option<Rc<RefCell<dyn Any + 'static>>>>>,
+    components: &'a HashMap<TypeId, Vec<Option<Component>>>,
 }
 
 impl<'a> Query<'a> {
     pub fn new(
         components_bit_masks: &'a HashMap<TypeId, u128>,
         entities_bit_maps: &'a Vec<u128>,
-        components: &'a HashMap<TypeId, Vec<Option<Rc<RefCell<dyn Any + 'static>>>>>,
+        components: &'a HashMap<TypeId, Vec<Option<Component>>>,
     ) -> Self {
         Self {
             map: 0,
@@ -40,7 +40,7 @@ impl<'a> Query<'a> {
         Ok(self)
     }
 
-    pub fn run(&self) -> (Vec<usize>, Vec<Vec<Rc<RefCell<dyn Any>>>>) {
+    pub fn run(&self) -> (Vec<usize>, Vec<Vec<Component>>) {
         let indexes: Vec<usize> = self
             .entities_bit_maps
             .iter()
