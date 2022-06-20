@@ -1,16 +1,16 @@
 use wgtr_ecs::wgtr::*;
 
 #[test]
-fn create_and_get_resource_immutably(){
+fn create_and_get_resource_immutably() {
     let mut world = World::new();
 
     world.add_resource(FpsResource(60));
 
     let fps = world.get_resource::<FpsResource>().unwrap();
-    assert_eq!(fps.0,60);
+    assert_eq!(fps.0, 60);
 }
 #[test]
-fn create_and_get_resource_mutably(){
+fn create_and_get_resource_mutably() {
     let mut world = World::new();
 
     world.add_resource(FpsResource(60));
@@ -19,11 +19,10 @@ fn create_and_get_resource_mutably(){
         fps.0 += 1;
     }
     let fps = world.get_resource::<FpsResource>().unwrap();
-    assert_eq!(fps.0,61);
-
+    assert_eq!(fps.0, 61);
 }
 #[test]
-fn remove_resource(){
+fn remove_resource() {
     let mut world = World::new();
 
     world.add_resource(FpsResource(60));
