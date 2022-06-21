@@ -1,6 +1,6 @@
 use std::{any::Any, cell::{Ref, RefMut}};
 
-use  wgtr_ecs::*;
+use  wgtr_ecs::{*, wgtr::QueryEntity};
 #[test]
 fn playground() -> Result<(), &'static str>{
     let mut world = wgtr::World::new();
@@ -36,17 +36,19 @@ fn playground() -> Result<(), &'static str>{
     //     dbg!(index, u, f);
     // } 
 
-    let result =  query!(world, &u32,&mut f32);
-    let indexes = result.0;
+    let mut query = world.query();
 
-    let bu32s: Vec<Ref<dyn Any>> = result.1[0].iter().map(|e| e.borrow()).collect();
-    let u32s: Vec<&u32> = bu32s.iter().map(|e| e.downcast_ref::<u32>().unwrap()).collect();
-    let mut bf32s: Vec<RefMut<dyn Any>> = result.1[1].iter().map(|e| e.borrow_mut()).collect();
-    let f32s: Vec<&mut f32> = bf32s.iter_mut().map(|e| e.downcast_mut::<f32>().unwrap()).collect();
+    let entities = query
+        .with_component::<u32>()?
+        .with_component::<f32>()?
+        .run_entity();
+    let indexes = entities.iter().map(|e| e.id);
+    let u32s = entities.iter().map(|e| e.get_component::<u32>().unwrap());
+    let f32s = entities.iter().map(|e| e.get_component_mut::<f32>().unwrap());
 
     use itertools::izip;
 
-    for (index, u, f) in izip!(indexes, u32s, f32s).into_iter(){
+    for (index, u, mut f) in izip!(indexes, u32s, f32s).into_iter(){
         *f += 1.0;
         dbg!(index, u, f);
     }

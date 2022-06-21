@@ -1,7 +1,9 @@
 mod query;
+mod query_entity;
 
 pub mod wgtr {
     pub use crate::query::*;
+    pub use crate::query_entity::*;
 
     use std::{
         any::{Any, TypeId},

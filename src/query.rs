@@ -3,7 +3,7 @@ use std::{
     collections::HashMap,
 };
 
-use crate::wgtr::Component;
+use crate::wgtr::{Component, QueryEntity};
 
 pub struct Query<'a> {
     map: u128,
@@ -65,13 +65,27 @@ impl<'a> Query<'a> {
 
         (indexes, result)
     }
+
+    pub fn run_entity(&self) -> Vec<QueryEntity> {
+        self.entities_bit_maps
+            .iter()
+            .enumerate()
+            .filter_map(|(index, entity_map)| {
+                if entity_map & self.map == self.map {
+                    Some(QueryEntity::new(index, self.components))
+                } else {
+                    None
+                }
+            })
+            .collect()
+    }
 }
 
 #[cfg(test)]
 mod test {
-    use std::any::TypeId;
+    use std::{any::TypeId, cell::{Ref, RefMut}};
 
-    use crate::wgtr::World;
+    use crate::wgtr::{World, QueryEntity};
 
     #[test]
     fn query_mask_updating_with_component() -> Result<(), &'static str> {
@@ -116,6 +130,56 @@ mod test {
         let extracted_u32 = first_u32.downcast_ref::<u32>().unwrap();
         assert_eq!(*extracted_u32, 420);
 
+        Ok(())
+    }
+    #[test]
+    fn query_for_entity_ref() -> Result<(), &'static str> {
+        let mut world = World::new();
+
+        world.register_component::<u32>();
+        world.register_component::<f32>();
+        world.create_entity().with_component(100_u32)?;
+        world.create_entity().with_component(10.0_f32)?;
+
+        let mut query = world.query();
+        let entities: Vec<QueryEntity> = query.with_component::<u32>()?.run_entity();
+
+        assert_eq!(entities.len(), 1);
+
+        for entity in entities {
+            assert_eq!(entity.id, 0);
+            let health: Ref<u32> = entity.get_component::<u32>()?;
+            assert_eq!(*health, 100);
+        }
+        Ok(())
+    }
+
+    #[test]
+    fn query_for_entity_mut() -> Result<(), &'static str> {
+        let mut world = World::new();
+
+        world.register_component::<u32>();
+        world.register_component::<f32>();
+        world.create_entity().with_component(100_u32)?;
+        world.create_entity().with_component(10.0_f32)?;
+
+        let mut query = world.query();
+        let entities: Vec<QueryEntity> = query.with_component::<u32>()?.run_entity();
+
+        assert_eq!(entities.len(), 1);
+
+        for entity in entities {
+            assert_eq!(entity.id, 0);
+            let mut health: RefMut<u32> = entity.get_component_mut::<u32>()?;
+            assert_eq!(*health, 100);
+            *health += 1;
+        }
+
+        let entities: Vec<QueryEntity> = query.with_component::<u32>()?.run_entity();
+        for entity in entities {
+            let health: Ref<u32> = entity.get_component::<u32>()?;
+            assert_eq!(*health, 101);
+        }
         Ok(())
     }
 }
