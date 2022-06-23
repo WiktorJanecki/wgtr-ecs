@@ -2,11 +2,14 @@ mod query;
 mod query_entity;
 mod macros;
 
+mod system;
+
 
 /// Main module of this library
 pub mod wgtr {
     pub use crate::query::*;
     pub use crate::query_entity::*;
+    pub use crate::system::*;
 
     use std::{
         any::{Any, TypeId},
@@ -24,6 +27,7 @@ pub mod wgtr {
         components: HashMap<TypeId, Vec<Option<Component>>>,
         bit_masks: HashMap<TypeId, u128>, // every component has its own mask
         bit_maps: Vec<u128>, // every entity has its map which shows which components does it has
+        
 
         creature_id: usize,     // id of entity that is being now created
         free_spots: Vec<usize>, // free spots to create entity after removing one

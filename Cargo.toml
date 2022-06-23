@@ -2,6 +2,15 @@
 name = "wgtr-ecs"
 version = "0.1.0"
 edition = "2021"
+authors = ["Wiktor Janecki <j.wiktor05@interia.pl>"]
+readme = "README.md"
+license = "MIT"
+repository = "https://github.com/wiktorjanecki/wgtr-ecs"
+homepage = "https://github.com/wiktorjanecki/wgtr-ecs"
+description = """
+Simple rust ecs made for educational purposes and wgtr engine
+Started by using https://github.com/brooks-builds/improve_skills_by_building_ecs_library_in_rust rust course
+"""
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
