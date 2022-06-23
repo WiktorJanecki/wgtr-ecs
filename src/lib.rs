@@ -1,5 +1,6 @@
 mod query;
 mod query_entity;
+mod macros;
 
 pub mod wgtr {
     pub use crate::query::*;

@@ -85,7 +85,7 @@ impl<'a> Query<'a> {
 mod test {
     use std::{any::TypeId, cell::{Ref, RefMut}};
 
-    use crate::wgtr::{World, QueryEntity};
+    use crate::{wgtr::{World, QueryEntity}, make_query};
 
     #[test]
     fn query_mask_updating_with_component() -> Result<(), &'static str> {
@@ -94,6 +94,20 @@ mod test {
         world.register_component::<f32>();
         let mut query = world.query();
         query.with_component::<u32>()?.with_component::<f32>()?;
+
+        assert_eq!(query.map, 3);
+        assert_eq!(TypeId::of::<u32>(), query.type_ids[0]);
+        assert_eq!(TypeId::of::<f32>(), query.type_ids[1]);
+
+        Ok(())
+    }
+    #[test]
+    fn macro_query_mask_updating_with_component() -> Result<(), &'static str>{
+        let mut world = World::new();
+        world.register_component::<u32>();
+        world.register_component::<f32>();
+        let mut query = world.query();
+        make_query!(query, u32, f32);
 
         assert_eq!(query.map, 3);
         assert_eq!(TypeId::of::<u32>(), query.type_ids[0]);
