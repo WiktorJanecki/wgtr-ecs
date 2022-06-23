@@ -1,10 +1,15 @@
 use std::{
     any::{Any, TypeId},
-    collections::HashMap,
+    collections::HashMap, cell::RefCell, rc::Rc,
 };
 
-use crate::wgtr::{Component, QueryEntity};
+use crate::wgtr::QueryEntity;
 
+type Component = Rc<RefCell<dyn Any + 'static>>;
+
+/**
+Struct made for querying entities with specyfic components. It is similar to builder pattern things but build function is either [Query::run()] or [Query::run_entity()].
+ */
 pub struct Query<'a> {
     map: u128,
 

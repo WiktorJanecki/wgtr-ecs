@@ -2,6 +2,8 @@ mod query;
 mod query_entity;
 mod macros;
 
+
+/// Main module of this library
 pub mod wgtr {
     pub use crate::query::*;
     pub use crate::query_entity::*;
@@ -13,8 +15,9 @@ pub mod wgtr {
         rc::Rc,
     };
 
-    pub type Component = Rc<RefCell<dyn Any + 'static>>;
+    type Component = Rc<RefCell<dyn Any + 'static>>;
 
+    /// Main struct which contains all the entities, components and resources.
     #[derive(Default)]
     pub struct World {
         resources: HashMap<TypeId, Box<dyn Any>>,

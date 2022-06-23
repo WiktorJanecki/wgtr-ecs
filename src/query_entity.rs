@@ -4,10 +4,33 @@ use std::{
     rc::Rc, collections::HashMap,
 };
 
-use crate::wgtr::Component;
+type Component = Rc<RefCell<dyn Any + 'static>>;
 
 type ExtractedComponents<'a> = Result<&'a Vec<Option<Rc<RefCell<dyn Any>>>>, &'static str>;
 
+/// Helper struct made for iterating over entities with [crate::wgtr::Query::run_entity()].
+/// 
+/// Example:
+/// ```
+/// use wgtr_ecs::*; // for macros
+/// let mut world = wgtr::World::new();
+///
+/// world.register_component::<u32>();
+/// world.register_component::<f32>();
+///
+/// world.create_entity()
+///     .with_component(10u32).unwrap()
+///     .with_component(10.1f32).unwrap();
+///
+/// let mut query = world.query();
+/// make_query!(query, u32, f32);
+/// 
+/// for entity in query.run_entity(){ // entity is crate::wgtr::QueryEntity
+///     let mut f = get_component!(entity, &mut f32);
+///     *f += 1.0;
+/// }
+///
+/// ```
 pub struct QueryEntity<'a> {
     pub id: usize,
     components: &'a HashMap<TypeId, Vec<Option<Component>>>,
