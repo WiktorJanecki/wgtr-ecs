@@ -3,7 +3,7 @@ use std::{
     collections::HashMap, cell::RefCell, rc::Rc,
 };
 
-use crate::wgtr::QueryEntity;
+use crate::QueryEntity;
 
 type Component = Rc<RefCell<dyn Any + 'static>>;
 
@@ -90,7 +90,7 @@ impl<'a> Query<'a> {
 mod test {
     use std::{any::TypeId, cell::{Ref, RefMut}};
 
-    use crate::{wgtr::{World, QueryEntity}, make_query};
+    use crate::{{World, QueryEntity}, make_query};
 
     #[test]
     fn query_mask_updating_with_component() -> Result<(), &'static str> {

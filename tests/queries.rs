@@ -1,6 +1,6 @@
 use std::{any::Any, cell::RefCell, rc::Rc};
 
-use wgtr_ecs::wgtr::*;
+use wgtr_ecs::*;
 
 #[test]
 fn create_query() -> Result<(), &'static str> {

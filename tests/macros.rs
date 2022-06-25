@@ -1,7 +1,7 @@
-use  wgtr_ecs::{*};
+use  wgtr_ecs::*;
 #[test]
 fn macros() -> Result<(), &'static str>{
-    let mut world = wgtr::World::new();
+    let mut world = World::new();
 
     world.register_component::<u32>();
     world.register_component::<f32>();

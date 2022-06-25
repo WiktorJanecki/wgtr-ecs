@@ -1,10 +1,10 @@
-/// Macro which helps with getting components when querying with [crate::wgtr::Query::run_entity()]. It does unwrap an error when attempting to use invalid component for exapmle unregistered one or unqueried one.
+/// Macro which helps with getting components when querying with [crate::Query::run_entity()]. It does unwrap an error when attempting to use invalid component for exapmle unregistered one or unqueried one.
 /// We will use get_component!(entity & TYPE); for to get immutable reference and get_component!(entity &mut TYPE); to get mutable one.
 /// 
 /// Example:
 /// ```
 /// use wgtr_ecs::get_component;
-/// use wgtr_ecs::wgtr::*;
+/// use wgtr_ecs::*;
 /// 
 /// let mut world = World::new();
 /// world.register_component::<u32>();
@@ -52,7 +52,7 @@ macro_rules! get_component {
 /// Example:
 /// ```
 /// use wgtr_ecs::*; // for macros
-/// let mut world = wgtr::World::new();
+/// let mut world = World::new();
 ///
 /// world.register_component::<u32>();
 /// world.register_component::<f32>();

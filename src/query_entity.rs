@@ -8,12 +8,12 @@ type Component = Rc<RefCell<dyn Any + 'static>>;
 
 type ExtractedComponents<'a> = Result<&'a Vec<Option<Rc<RefCell<dyn Any>>>>, &'static str>;
 
-/// Helper struct made for iterating over entities with [crate::wgtr::Query::run_entity()].
+/// Helper struct made for iterating over entities with [crate::Query::run_entity()].
 /// 
 /// Example:
 /// ```
 /// use wgtr_ecs::*; // for macros
-/// let mut world = wgtr::World::new();
+/// let mut world = World::new();
 ///
 /// world.register_component::<u32>();
 /// world.register_component::<f32>();
@@ -25,7 +25,7 @@ type ExtractedComponents<'a> = Result<&'a Vec<Option<Rc<RefCell<dyn Any>>>>, &'s
 /// let mut query = world.query();
 /// make_query!(query, u32, f32);
 /// 
-/// for entity in query.run_entity(){ // entity is crate::wgtr::QueryEntity
+/// for entity in query.run_entity(){ // entity is crate::QueryEntity
 ///     let mut f = get_component!(entity, &mut f32);
 ///     *f += 1.0;
 /// }

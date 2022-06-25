@@ -1,11 +1,11 @@
-use wgtr_ecs::wgtr::{System, World, Systems};
+use wgtr_ecs::{System, World, Systems};
 
 #[test]
 fn create_and_init_system(){
     struct SimpleSystem{}
 
     impl System for SimpleSystem{
-        fn init(&mut self, world : &mut wgtr_ecs::wgtr::World){
+        fn init(&mut self, world : &mut wgtr_ecs::World){
             let x = world.get_resource_mut::<u32>().unwrap();
             *x += 1;
         }

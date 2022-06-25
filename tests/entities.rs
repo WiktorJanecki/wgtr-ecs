@@ -1,4 +1,4 @@
-use wgtr_ecs::wgtr::*;
+use wgtr_ecs::*;
 
 #[test]
 fn create_entity() -> Result<(), &'static str> {

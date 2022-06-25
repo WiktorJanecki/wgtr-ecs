@@ -1,4 +1,4 @@
-use crate::wgtr::World;
+use crate::World;
 
 pub trait System{
     fn init(&mut self, _world : &mut World){}
